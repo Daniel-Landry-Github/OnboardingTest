@@ -109,6 +109,11 @@
             Console.Write("Personal Email: ");
             personalEmail = Console.ReadLine();
             // Verification of valid email format (<address>@<domain>.com) here.
+            if (!Verifications.PersonalEmailFormatting(personalEmail))
+            {
+                RequestPersonalEmail();
+            }
+            Console.WriteLine("VERIFIED");
             return personalEmail;
         }
 
@@ -119,6 +124,11 @@
             Console.Write("Start Date: ");
             startDate = Console.ReadLine();
             // Verification of valid date format (MM/DD/YYYY) here.
+            if (!Verifications.StartDateFormatting(startDate))
+            {
+                RequestStartDate();
+            }
+            Console.WriteLine("VERIFIED");
             return startDate;
         }
 
@@ -200,7 +210,7 @@
                     {
                         verified = false;
                     }
-                    else 
+                    else
                     {
                         verified = true;
                         break; // Break out once letter is verified to reduce unneeded enumeration.
@@ -218,8 +228,7 @@
         {
             char[] array = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
             bool verified = false;
-            string submissionCaseCorrected = submission.ToLower();
-            foreach (char sNum in submissionCaseCorrected)
+            foreach (char sNum in submission)
             {
                 foreach (char aNum in array)
                 {
@@ -241,7 +250,33 @@
             }
             return verified;
         }
+        public static bool ContainsSymbols(string submission)
+        {
+            char[] array = new char[] { '`', '!', '@', '#', '$', '%', '%', '^', '&', '*', '(', ')', '-', '_', '=', '+', '{', '[', '}', '|', '<', ',', '>', '.', '/', '"', '?', '/' };
+            bool verified = false;
 
+            foreach (char sSym in submission)
+            {
+                foreach (char aSym in array)
+                {
+                    if (aSym != sSym)
+                    {
+                        verified = false;
+                    }
+                    else
+                    {
+                        verified = true;
+                        break;
+                    }
+                }
+                if (!verified)
+                {
+                    Console.WriteLine($"Invalid submission. Non-Symbol character detected: '{sSym}'");
+                    return verified;
+                }
+            }
+            return verified;
+        }
         public static bool MobilePhoneFormatting(string submission)
         {
             // Required mobile phone formatting: '555-111-2222'
@@ -289,8 +324,114 @@
                     verified = true;
                     return verified;
                 }
-                
+
+            }
+        }
+        public static bool PersonalEmailFormatting(string submission)
+        {
+            // Verification of valid email format (<address>@<domain>.com) here.
+            // Verify '@' with an Indexof('@'). '-1' results in failure.
+            // Verify '.com' with Substring((submission.Length - 4)).
+            bool verify = false;
+            if (submission.IndexOf('@') == -1)
+            {
+                Console.WriteLine("Invalid formatting. Missing '@' symbol.");
+                return verify;
+            }
+            if (submission.Substring((submission.Length - 4)) != ".com")
+            {
+                Console.WriteLine("Invalid formatting. Missing '.com' suffix.");
+                return verify;
+            }
+            verify = true;
+            return verify;
+        }
+        public static bool StartDateFormatting(string submission)
+        {
+            // Verification of valid date format (MM/DD/YYYY) here.
+            bool verified = false;
+            string[] missedRequirements = new string[3];
+
+            // Initial verification of formatting.
+            if (submission.Length != 10)
+            {
+                missedRequirements[0] = $"Format incorrect. 10 character requirement. Current: {submission.Length}.";
+            }
+            if (submission.IndexOf('/') != 2)
+            {
+                missedRequirements[1] = "Missing inital '/' for MM/DD.";
+            }
+            if (submission.Substring(5).IndexOf('/') != 0)
+            {
+                missedRequirements[2] = "Missing second '/' for DD/YYYY.";
+            }
+
+            int i = 0;
+            int i2 = 0;
+            foreach (string item in missedRequirements)
+            {
+                if (missedRequirements[i] != null)
+                {
+                    Console.WriteLine(missedRequirements[i]);
+                    i2++;
+                }
+                i++;
+            }
+
+            if (i2 != 0)
+            {
+                return verified;
+            }
+            else
+            {
+                // Secondary verification for non-numerical characters where applicable.
+                int month = Convert.ToInt32(submission.Substring(0, 2));
+                int day = Convert.ToInt32(submission.Substring(3, 2));
+                int year = Convert.ToInt32(submission.Substring(6));
+                DateTime localDate = DateTime.Now;
+
+                if (!ContainsNumbers(submission.Substring(0, 2)) || !ContainsNumbers(submission.Substring(3, 2)) || !ContainsNumbers(submission.Substring(6)))
+                {
+                    return verified;
+                }
+                else
+                {
+                    // Final verifications for invalid date values.
+                    if (month <= 0 || month > 12)
+                    {
+                        Console.WriteLine("Month must be between 1-12.");
+                        return verified;
+                    }
+                    if (day <= 0 || day > 31)
+                    {
+                        Console.WriteLine("Day must be between 1-31.");
+                        return verified;
+                    }
+                    if ((month == 4 || month == 6 || month == 9 || month == 11) && day > 30)
+                    {
+                        Console.WriteLine($"Month '{month}' doesn't have {day} days.");
+                        return verified;
+                    }
+                    if (month == 2 && day > 28)
+                    {
+                        Console.WriteLine($"February does not have {day} days.");
+                        return verified;
+                    }
+                    if (year != localDate.Year)
+                    {
+                        if (month != 1) // Permitting new hires joining in January.
+                        {
+                            Console.WriteLine("Invalid year.");
+                            return verified;
+                        }
+                    }
+                    verified = true;
+                    return verified;
+                }
             }
         }
     }
 }
+
+    // Class for containing user information and being processed?
+    // Class for containing email information and generating email?
